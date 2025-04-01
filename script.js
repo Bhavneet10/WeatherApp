@@ -23,11 +23,14 @@ function updateRecentCities() {
         return;
     }
     recentCitiesDiv.classList.remove("hidden");
-    recentCitiesDiv.innerHTML = recentCities.map(city => `<div>${city}</div>`).join("");
+    recentCitiesDiv.innerHTML = recentCities
+        .map(city => `<div class="recent-city" data-city="${city}">${city}</div>`)
+        .join("");
 }
 
 // Add city to recent searches
 function addToRecentCities(city) {
+    city = city.trim().toLowerCase(); // Normalize city name
     if (!recentCities.includes(city)) {
         recentCities.unshift(city);
         if (recentCities.length > 5) recentCities.pop(); // Keep only 5 recent cities
@@ -72,6 +75,7 @@ function showError(message) {
     errorMessage.textContent = message;
     currentWeatherDiv.classList.add("hidden");
     forecastDiv.classList.add("hidden");
+    recentCitiesDiv.classList.add("hidden"); // Hide dropdown on error
 }
 
 // Event Listeners
@@ -87,6 +91,7 @@ searchBtn.addEventListener("click", async () => {
         addToRecentCities(city);
         const forecastResult = await fetchForecast(result.data.coord.lat, result.data.coord.lon);
         if (forecastResult.success) displayForecast(forecastResult.data);
+        recentCitiesDiv.classList.add("hidden"); // Hide dropdown after successful search
     } else {
         showError(result.error);
     }
@@ -102,6 +107,7 @@ currentLocationBtn.addEventListener("click", () => {
                     displayCurrentWeather(result.data);
                     const forecastResult = await fetchForecast(latitude, longitude);
                     if (forecastResult.success) displayForecast(forecastResult.data);
+                    recentCitiesDiv.classList.add("hidden"); // Hide dropdown after successful fetch
                 } else {
                     showError(result.error);
                 }
@@ -113,19 +119,35 @@ currentLocationBtn.addEventListener("click", () => {
     }
 });
 
+// Event delegation for dropdown clicks
 recentCitiesDiv.addEventListener("click", async (e) => {
-    if (e.target.tagName === "DIV") {
-        const city = e.target.textContent;
-        cityInput.value = city;
+    const cityElement = e.target.closest(".recent-city");
+    if (cityElement) {
+        const city = cityElement.dataset.city;
+        cityInput.value = city; // Update input field with selected city
         const result = await fetchWeatherByCity(city);
         if (result.success) {
             displayCurrentWeather(result.data);
             const forecastResult = await fetchForecast(result.data.coord.lat, result.data.coord.lon);
             if (forecastResult.success) displayForecast(forecastResult.data);
+            recentCitiesDiv.classList.add("hidden"); // Hide dropdown after selecting a city
         } else {
             showError(result.error);
         }
     }
+});
+
+// Show/hide dropdown on input focus
+cityInput.addEventListener("focus", () => {
+    if (recentCities.length > 0) {
+        recentCitiesDiv.classList.remove("hidden");
+    }
+});
+
+cityInput.addEventListener("blur", () => {
+    setTimeout(() => {
+        recentCitiesDiv.classList.add("hidden");
+    }, 200); // Delay to allow click event to register
 });
 
 // Initial load
