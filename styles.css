@@ -1,0 +1,22 @@
+/* Custom styles for dropdown and other elements */
+#recentCities {
+    display: none; /* Initially hidden */
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    width: 200px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#searchContainer:focus-within #recentCities {
+    display: block; /* Show dropdown when input is focused */
+}
+
+#recentCities div {
+    padding: 8px;
+    cursor: pointer;
+}
+
+#recentCities div:hover {
+    background-color: #f0f0f0;
+}
